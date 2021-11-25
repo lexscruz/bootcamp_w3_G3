@@ -2,7 +2,11 @@ package com.bootcamp_w3_g3.controller;
 
 import com.bootcamp_w3_g3.model.dtos.request.RepresentanteForm;
 import com.bootcamp_w3_g3.model.dtos.response.RepresentanteDTO;
+import com.bootcamp_w3_g3.model.dtos.response.requisito6.AtividadeRepresentanteDTO;
+import com.bootcamp_w3_g3.model.entity.OrdemDeEntrada;
 import com.bootcamp_w3_g3.model.entity.Representante;
+import com.bootcamp_w3_g3.repository.OrdemDeEntradaRepository;
+import com.bootcamp_w3_g3.service.OrdemDeEntradaService;
 import com.bootcamp_w3_g3.service.RepresentanteService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -23,6 +27,10 @@ public class RepresentanteController {
 
         @Autowired
         private RepresentanteService representanteService;
+        @Autowired
+        private OrdemDeEntradaService ordemDeEntradaService;
+        @Autowired
+        private OrdemDeEntradaRepository ordemDeEntradaRepository;
 
         @PostMapping("/salvar")
         @ApiOperation("Criar um novo representante.")
@@ -60,5 +68,13 @@ public class RepresentanteController {
                                              @PathVariable Long id) {
                 representanteService.apagar(id);
             return new ResponseEntity<>("Representante deletado com sucesso", HttpStatus.OK);
+        }
+
+        @GetMapping("/atividade/{codigo}")
+        @ApiOperation("Retorna um representante específico por seu identificador. Erro 404 se não existir.")
+        public ResponseEntity<AtividadeRepresentanteDTO> atividade(@PathVariable String codigo) {
+            List<OrdemDeEntrada> ordemDeEntrada = ordemDeEntradaRepository.findAll();
+            AtividadeRepresentanteDTO atividadeRepresentanteDTO = ordemDeEntradaService.retornaAtivdadeRepresentante(codigo, ordemDeEntrada);
+            return new ResponseEntity<>(atividadeRepresentanteDTO,HttpStatus.OK);
         }
     }

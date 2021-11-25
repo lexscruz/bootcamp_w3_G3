@@ -1,8 +1,10 @@
 package com.bootcamp_w3_g3.service;
 
+import com.bootcamp_w3_g3.model.dtos.response.requisito6.AtividadeRepresentanteDTO;
 import com.bootcamp_w3_g3.model.entity.*;
 import com.bootcamp_w3_g3.repository.*;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import java.time.LocalDate;
@@ -28,6 +30,7 @@ public class OrdemDeEntradaUnitTest {
 
 
     RepresentanteRepository representanteRepository = Mockito.mock(RepresentanteRepository.class);
+    RepresentanteService representanteServiceMock = Mockito.mock(RepresentanteService.class);
     RepresentanteService representanteService = new RepresentanteService(representanteRepository);
 
     ArmazemRepository armazemRepository = Mockito.mock(ArmazemRepository.class);
@@ -67,6 +70,13 @@ public class OrdemDeEntradaUnitTest {
             .endereco("rua 10")
             .uf("SP").build();
 
+    Armazem armazem2 = Armazem.builder()
+            .codArmazem("Ar-231231")
+            .representante(representante2)
+            .nome("AR2")
+            .endereco("rua 10")
+            .uf("SP").build();
+
     Setor setor1 = Setor.builder()
             .id(SETOR_ID)
             .codigo("123")
@@ -80,11 +90,19 @@ public class OrdemDeEntradaUnitTest {
             .codigo("2")
             .nome("Setor2")
             .tipoProduto(TipoProduto.FRESCOS)
-            .armazem(armazem1).build();
+            .armazem(armazem2).build();
 
     Produto produto = Produto.builder()
             .codigoDoProduto(123)
             .nome("carne")
+            .preco(60.0)
+            .temperaturaIndicada(8.0)
+            .tipoProduto(TipoProduto.FRESCOS)
+            .build();
+
+    Produto produto2 = Produto.builder()
+            .codigoDoProduto(231231)
+            .nome("carne2")
             .preco(60.0)
             .temperaturaIndicada(8.0)
             .tipoProduto(TipoProduto.FRESCOS)
@@ -103,6 +121,19 @@ public class OrdemDeEntradaUnitTest {
             .produto(produto)
             .build();
 
+    Lote lote2 = Lote.builder()
+            .numero(20)
+            .quantidadeAtual(10)
+            .quantidadeMinina(5)
+            .temperaturaAtual(10.0)
+            .temperaturaMinima(5.0)
+            .horaFabricacao(LocalTime.now())
+            .dataDeFabricacao(LocalDate.now())
+            .dataDeValidade(LocalDate.now())
+            .dataDeValidade(LocalDate.now())
+            .produto(produto2)
+            .build();
+
     Vendedor vendedor = Vendedor.builder()
             .nome("Alex")
             .sobrenome("Cruz")
@@ -119,6 +150,14 @@ public class OrdemDeEntradaUnitTest {
             .endereco("Av. Copacabana")
             .build();
 
+    Vendedor vendedor2 = Vendedor.builder()
+            .nome("Alex")
+            .sobrenome("Dos Mestres")
+            .cpf("2345678945")
+            .telefone("21 9 9934-3454")
+            .endereco("Av. Copacabana")
+            .build();
+
     OrdemDeEntrada ordemDeEntrada = OrdemDeEntrada.builder()
             .numeroDaOrdem(100)
             .dataDaOrdem(LocalDate.now())
@@ -128,6 +167,28 @@ public class OrdemDeEntradaUnitTest {
             .lote(lote)
             .vendedor(vendedor)
             .build();
+
+    OrdemDeEntrada ordemDeEntrada2 = OrdemDeEntrada.builder()
+            .numeroDaOrdem(200)
+            .dataDaOrdem(LocalDate.now())
+            .setor(setor2)
+            .representante(representante2)
+            .quantidade(3)
+            .lote(lote2)
+            .vendedor(vendedor2)
+            .build();
+
+    OrdemDeEntrada ordemDeEntrada3 = OrdemDeEntrada.builder()
+            .numeroDaOrdem(300)
+            .dataDaOrdem(LocalDate.now())
+            .setor(setor2)
+            .representante(representante2)
+            .quantidade(3)
+            .lote(lote2)
+            .vendedor(vendedor2)
+            .build();
+
+    List<OrdemDeEntrada> ordemDeEntradaList = new ArrayList<>();
 
     @Test
     void registrarOrdemDeEntradaTest()
@@ -171,5 +232,32 @@ public class OrdemDeEntradaUnitTest {
         }
 
     }
+
+    @Test
+    void retornaAtividadeRepresentanteTest(){
+        representante1.setCodigo("R-101010");
+        representante2.setCodigo("R-202020");
+        ordemDeEntradaList.add(ordemDeEntrada);
+        ordemDeEntradaList.add(ordemDeEntrada2);
+        ordemDeEntradaList.add(ordemDeEntrada3);
+
+        Mockito.when(representanteRepository.findByCodigo(Mockito.any(String.class))).thenReturn(representante2);
+
+        AtividadeRepresentanteDTO atividadeRepresentanteDTO = ordemDeEntradaService.retornaAtivdadeRepresentante(representante2.getCodigo(), ordemDeEntradaList);
+
+        ordemDeEntradaList.remove(0);
+
+        AtividadeRepresentanteDTO atividadeRepresentanteDTOEsperada = AtividadeRepresentanteDTO.builder()
+                .codigo(representante2.getCodigo())
+                .nome(representante2.getNome())
+                .sobreNome(representante2.getSobrenome())
+                .ordemDeEntradaList(ordemDeEntradaList)
+                .build();
+
+        assertNotNull(atividadeRepresentanteDTO);
+        assertEquals(atividadeRepresentanteDTOEsperada.getOrdemDeEntradaList().size(), atividadeRepresentanteDTO.getOrdemDeEntradaList().size());
+    }
+
+
 
 }
