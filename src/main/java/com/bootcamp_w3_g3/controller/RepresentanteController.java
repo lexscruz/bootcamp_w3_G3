@@ -70,8 +70,12 @@ public class RepresentanteController {
             return new ResponseEntity<>("Representante deletado com sucesso", HttpStatus.OK);
         }
 
+    /**
+     * Retorno de um representante com todas as ordens de entrada que atuou.
+     * @autor alex cruz
+     */
         @GetMapping("/atividade/{codigo}")
-        @ApiOperation("Retorna um representante específico por seu identificador. Erro 404 se não existir.")
+
         public ResponseEntity<AtividadeRepresentanteDTO> atividade(@PathVariable String codigo) {
             List<OrdemDeEntrada> ordemDeEntrada = ordemDeEntradaRepository.findAll();
             AtividadeRepresentanteDTO atividadeRepresentanteDTO = ordemDeEntradaService.retornaAtivdadeRepresentante(codigo, ordemDeEntrada);

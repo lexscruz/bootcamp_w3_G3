@@ -1,10 +1,8 @@
 package com.bootcamp_w3_g3.service;
 
 import com.bootcamp_w3_g3.advisor.EntityNotFoundException;
-import com.bootcamp_w3_g3.model.entity.Carrinho;
-import com.bootcamp_w3_g3.model.entity.Itens;
-import com.bootcamp_w3_g3.model.entity.Lote;
-import com.bootcamp_w3_g3.model.entity.Produto;
+import com.bootcamp_w3_g3.model.dtos.response.requisito6.CompradorMediaGastosPorCompraDTO;
+import com.bootcamp_w3_g3.model.entity.*;
 import com.bootcamp_w3_g3.repository.CarrinhoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,6 +25,9 @@ public class CarrinhoService {
 
     private LoteService loteService;
 
+    public CarrinhoService(CarrinhoRepository carrinhoRepository){
+        this.carrinhoRepository = carrinhoRepository;
+    }
     @Autowired
     public CarrinhoService(CarrinhoRepository carrinhoRepository, LoteService loteService){
         this.carrinhoRepository = carrinhoRepository;
@@ -145,7 +146,34 @@ public class CarrinhoService {
         }
     }
 
+    /**
+     * Retorna de um valor médio que o comprador gasta por compra.
+     * @autor alex cruz
+     */
+    public CompradorMediaGastosPorCompraDTO mediaDeGastoDasCompras(String codComprador, List<Carrinho> listaDeCarrinhos){
 
+        List<Itens> itensList = new ArrayList<>();
+
+        List<Carrinho> carrinhosDoComprador = new ArrayList<>();
+
+        Double soma=0.0;
+        Integer quantidade = 0;
+        Double mediaGastoPorCompra;
+
+        for (Carrinho c : listaDeCarrinhos) {
+            if(c.getCodigoComprador().equals(codComprador) && c.getStatusCompra().equals(StatusCompra.CONCLUIDO)){
+                for (int i=0; i < c.getItensList().size(); i++){
+                    soma += c.getItensList().get(i).getProduto().getPreco();
+                    quantidade += c.getItensList().get(i).getQuantidade();
+                }
+                carrinhosDoComprador.add(c);
+            }
+        }
+
+        mediaGastoPorCompra = soma / quantidade;
+
+        return CompradorMediaGastosPorCompraDTO.builder().mediaDeGastoPorCompra(mediaGastoPorCompra).build();
+    }
 
 
 

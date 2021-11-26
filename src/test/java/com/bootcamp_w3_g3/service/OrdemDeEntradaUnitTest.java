@@ -233,6 +233,10 @@ public class OrdemDeEntradaUnitTest {
 
     }
 
+    /**
+     * Testa Retorno de um representante com todas as ordens de entrada que atuou.
+     * @autor alex cruz
+     */
     @Test
     void retornaAtividadeRepresentanteTest(){
         representante1.setCodigo("R-101010");

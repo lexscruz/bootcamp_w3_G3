@@ -182,6 +182,10 @@ public class OrdemDeEntradaService {
         return  ordemDeEntradaRepository.findByNumeroDaOrdem(numeroDaOrdem);
     }
 
+    /**
+     * Retorno de um representante com todas as ordens de entrada que atuou.
+     * @autor alex cruz
+     */
     public AtividadeRepresentanteDTO retornaAtivdadeRepresentante(String codRepresentante, List<OrdemDeEntrada> ordemDeEntradaList){
         Representante representante = representanteService.obter(codRepresentante);
 
