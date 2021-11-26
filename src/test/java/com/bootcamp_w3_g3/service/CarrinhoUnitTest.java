@@ -1,5 +1,6 @@
 package com.bootcamp_w3_g3.service;
 
+import com.bootcamp_w3_g3.model.dtos.response.requisito6.CompradorMediaGastosPorCompraDTO;
 import com.bootcamp_w3_g3.model.entity.*;
 import com.bootcamp_w3_g3.repository.CarrinhoRepository;
 import org.junit.jupiter.api.Test;
@@ -26,22 +27,32 @@ public class CarrinhoUnitTest{
 
     LoteService loteServiceMock = Mockito.mock(LoteService.class);
 
-    Carrinho carrinho  = Carrinho.builder()
-            .codigo("12345")
-            .dataDeOrdem(LocalDate.now())
-            .statusCompra(StatusCompra.PENDENTE)
+    List<Carrinho> carrinhoList = new ArrayList<>();
+
+    List<Itens> itensList = new ArrayList<>();
+
+    Comprador comprador  = Comprador.builder()
+            .codigo("123")
+            .nome("Alex")
+            .sobrenome("Cruz")
+            .cpf("12312345567")
+            .telefone("5555555")
+            .endereco("Rua Joao neves 18")
             .build();
 
-    Carrinho carrinho2  = Carrinho.builder()
-            .codigo("23423")
-            .dataDeOrdem(LocalDate.now())
-            .statusCompra(StatusCompra.CONCLUIDO)
+    Comprador comprador2  = Comprador.builder()
+            .codigo("456")
+            .nome("Hugo")
+            .sobrenome("Damm")
+            .cpf("12312345590")
+            .telefone("21 3333-1122")
+            .endereco("Rua Copacabana")
             .build();
 
     Produto produto = Produto.builder()
             .codigoDoProduto(25)
             .nome("Batata Doce")
-            .preco(12.69)
+            .preco(10.00)
             .temperaturaIndicada(18.5)
             .tipoProduto(TipoProduto.FRESCOS)
             .build();
@@ -50,10 +61,11 @@ public class CarrinhoUnitTest{
     Produto produto2 = Produto.builder()
             .codigoDoProduto(25)
             .nome("Alface")
-            .preco(2.69)
+            .preco(2.0)
             .temperaturaIndicada(18.5)
             .tipoProduto(TipoProduto.FRESCOS)
             .build();
+
     Lote lote = Lote.builder()
             .numero(10)
             .dataDeFabricacao(LocalDate.parse("2021-10-30", DateTimeFormatter.ofPattern("yyyy-MM-dd")))
@@ -64,17 +76,45 @@ public class CarrinhoUnitTest{
 
     Itens item = Itens.builder()
             .produto(produto)
-            .quantidade(25)
+            .quantidade(2)
             .build();
 
     Itens item2 = Itens.builder()
             .produto(produto2)
-            .quantidade(10)
+            .quantidade(4)
             .build();
 
-    List<Carrinho> carrinhoList = new ArrayList<>();
+    Carrinho carrinho  = Carrinho.builder()
+            .codigo("12345")
+            .dataDeOrdem(LocalDate.now())
+            .statusCompra(StatusCompra.PENDENTE)
+            .itensList(null)
+            .codigoComprador(comprador.getCodigo())
+            .build();
 
-    List<Itens> itensList = new ArrayList<>();
+    Carrinho carrinho2  = Carrinho.builder()
+            .codigo("23423")
+            .dataDeOrdem(LocalDate.now())
+            .statusCompra(StatusCompra.CONCLUIDO)
+            .itensList(null)
+            .codigoComprador(comprador2.getCodigo())
+            .build();
+
+    Carrinho carrinho3  = Carrinho.builder()
+            .codigo("1113423")
+            .dataDeOrdem(LocalDate.now())
+            .statusCompra(StatusCompra.CONCLUIDO)
+            .itensList(null)
+            .codigoComprador(comprador2.getCodigo())
+            .build();
+
+    Carrinho carrinho4  = Carrinho.builder()
+            .codigo("5553423")
+            .dataDeOrdem(LocalDate.now())
+            .statusCompra(StatusCompra.CONCLUIDO)
+            .itensList(null)
+            .codigoComprador(comprador2.getCodigo())
+            .build();
 
     /**
      * Criado teste unitário de método que atende ao requisito 3
@@ -146,9 +186,6 @@ public class CarrinhoUnitTest{
 
         assertEquals(retornoDoPrecoDosItens,retornoDoRegistrarPedido);
     }
-
-
-
 
     /**
      * Criado teste unitário de método que atende ao requisito 2
@@ -279,6 +316,52 @@ public class CarrinhoUnitTest{
 
         assertEquals(carrinhoAlterado.getStatusCompra(), carrinho.getStatusCompra());
 
+    }
+
+    /**
+     * Testa Retorno de um valor médio que o comprador gasta por compra.
+     * @autor alex cruz
+     */
+    @Test
+    void mediaDeGastoDasComprasTest(){
+        itensList.add(item);
+        itensList.add(item2);
+
+        carrinho.setItensList(itensList);
+        carrinho2.setItensList(itensList);
+        carrinho3.setItensList(itensList);
+        carrinho4.setItensList(itensList);
+
+        carrinhoList.add(carrinho);
+        carrinhoList.add(carrinho2);
+        carrinhoList.add(carrinho3);
+        carrinhoList.add(carrinho4);
+
+        List<Carrinho> carrinhosDoComprador = new ArrayList<>();
+
+        Mockito.when(carrinhoRepository.findAll()).thenReturn(carrinhoList);
+
+        carrinhoService = new CarrinhoService(carrinhoRepository);
+        CompradorMediaGastosPorCompraDTO compradorMediaGastosPorCompraDTO = carrinhoService.mediaDeGastoDasCompras("456", carrinhoList);
+
+        Double soma=0.0;
+        Double mediaEsperada;
+        Integer qtd = 0;
+        for (Carrinho c : carrinhoList) {
+            if(c.getCodigoComprador().equals(comprador2.getCodigo()) && c.getStatusCompra().equals(StatusCompra.CONCLUIDO)){
+                for (int i=0; i < c.getItensList().size(); i++){
+                    soma += c.getItensList().get(i).getProduto().getPreco();
+                    qtd += c.getItensList().get(i).getQuantidade();
+                }
+                carrinhosDoComprador.add(c);
+            }
+        }
+        mediaEsperada = soma / qtd;
+        CompradorMediaGastosPorCompraDTO compradorMediaGastosPorCompraDTOEsperado = CompradorMediaGastosPorCompraDTO.builder()
+                .mediaDeGastoPorCompra(mediaEsperada).build();
+
+        assertNotNull(compradorMediaGastosPorCompraDTO);
+        assertEquals(compradorMediaGastosPorCompraDTOEsperado.getMediaDeGastoPorCompra(),compradorMediaGastosPorCompraDTO.getMediaDeGastoPorCompra());
     }
 }
 

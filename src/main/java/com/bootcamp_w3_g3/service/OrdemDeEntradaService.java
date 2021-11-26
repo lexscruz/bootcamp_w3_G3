@@ -2,12 +2,15 @@ package com.bootcamp_w3_g3.service;
 
 
 import com.bootcamp_w3_g3.advisor.EntityNotFoundException;
+import com.bootcamp_w3_g3.model.dtos.response.requisito6.AtividadeRepresentanteDTO;
 import com.bootcamp_w3_g3.model.entity.*;
 import com.bootcamp_w3_g3.repository.OrdemDeEntradaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -177,5 +180,28 @@ public class OrdemDeEntradaService {
 
     public OrdemDeEntrada obter(Integer numeroDaOrdem) {
         return  ordemDeEntradaRepository.findByNumeroDaOrdem(numeroDaOrdem);
+    }
+
+    /**
+     * Retorno de um representante com todas as ordens de entrada que atuou.
+     * @autor alex cruz
+     */
+    public AtividadeRepresentanteDTO retornaAtivdadeRepresentante(String codRepresentante, List<OrdemDeEntrada> ordemDeEntradaList){
+        Representante representante = representanteService.obter(codRepresentante);
+
+        List<OrdemDeEntrada> ordensEntradaRepresentanteList = new ArrayList<>();
+
+        for (OrdemDeEntrada ode: ordemDeEntradaList) {
+            if (ode.getRepresentante().getCodigo().equals(codRepresentante)){
+                ordensEntradaRepresentanteList.add(ode);
+            }
+        }
+
+        return AtividadeRepresentanteDTO.builder()
+                .codigo(representante.getCodigo())
+                .nome(representante.getNome())
+                .sobreNome(representante.getSobrenome())
+                .ordemDeEntradaList(ordensEntradaRepresentanteList)
+                .build();
     }
 }
